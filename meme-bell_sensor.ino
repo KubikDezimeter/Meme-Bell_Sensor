@@ -40,16 +40,32 @@ void setup() {
   HTTPClient http;
 
   Serial.print("[HTTP] begin...\n");
-  http.begin(client, "http://192.168.238.101:8989/api/ring");
+  http.begin(client, "https://discord.com/api/v10/users/@me/channels");
 
-  Serial.print("[HTTP] POST...\n");
-  int httpCode = http.POST("");
+  http.addHeader("Authorization", DISCORD_API_TOKEN);
+  http.addHeader("User-Agent", "DiscordBot (https://github.com/KubikDezimeter/meme-bell_sensor, 0.1.0)");
 
-  if (httpCode > 0) {
-    // HTTP header has been send and Server response header has been handled
-    Serial.printf("[HTTP] POST... code: %d\n", httpCode);
-  } else {
-    Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+  const char* user_ids[] = {"137225481446621184"};
+  const int user_count = 1;
+
+  for (int i = 0; i < user_count; i++) {
+    char body[1024];
+    snprintf(body, sizeof(body), "{\"recipient_id\":\"%s\"}", user_ids[i]);
+    // Serial.println(body);
+    // Serial.println(sizeof(user_ids));
+    int httpCode = http.POST(body);
+
+    if (httpCode > 0) {
+      // HTTP header has been send and Server response header has been handled
+      Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+      const String& payload = http.getString();
+      Serial.println("received payload:\n<<");
+      Serial.println(payload);
+      Serial.println(">>");
+
+    } else {
+      Serial.printf("[HTTP] POST... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
   }
 
   http.end();
